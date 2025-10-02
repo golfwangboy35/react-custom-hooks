@@ -1,14 +1,22 @@
-import React, {useState} from 'react';
+import React from 'react';
 import './App.css';
+import useInput from "./hooks/useInput";
 
-function App() {
-    const [value, setValue] = useState('');
-  return (
-    <div className="App">
-      <input type="text" value={value} onChange={(e) =>setValue(e.target.value)} />
-        <button onClick={() => console.log(value)}>ClickMe</button>
-    </div>
-  );
+function App(): React.ReactElement {
+    const username = useInput('');
+    const password = useInput('');
+    
+    const handleClick = (): void => {
+        console.log(username.value, password.value);
+    };
+    
+    return (
+        <div className="App">
+            <input {...username} type="text" placeholder="Enter User name" />
+            <input {...password} type="password" placeholder="Enter Password" />
+            <button onClick={handleClick}>ClickMe</button>
+        </div>
+    );
 }
 
 export default App;
