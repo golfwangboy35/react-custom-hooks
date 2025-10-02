@@ -1,39 +1,39 @@
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import './App.css';
-import useInput from "./hooks/useInput";
-import Hover from "./components/Hover";
-import useDebounce from "./hooks/useDebounce";
+import axios from "axios";
+import useRequest from "./hooks/useRequest";
+
+interface Todo {
+    id: number;
+    userId: number;
+    title: string;
+    completed: boolean;
+}
 
 function App(): React.ReactElement {
-    const [value, setValue] = useState<string>('');
+    const fetchTodos = useCallback(async () => {
+        return await axios.get<Todo[]>(`https://jsonplaceholder.typicode.com/todos`);
+    }, []);
 
-    const search = async (query: string): Promise<void> => {
-        if (!query.trim()) {
-            return;
-        }
-        
-        try {
-            const response = await fetch(`https://jsonplaceholder.typicode.com/todos?q=${query}`);
-            const data = await response.json();
-            console.log('Search results:', data);
-        } catch (error) {
-            console.error('Error fetching:', error);
-        }
-    };
-    
-    const debouncedSearch = useDebounce(search, 500);
+    const [todos, loading, error] = useRequest<Todo[]>(fetchTodos);
+
+    if (loading) {
+        return <h1>Loading...</h1>;
+    }
+
+    if (error) {
+        return <h1>Error: {error}</h1>;
+    }
 
     return (
         <div className="App">
-            <input
-                type="text" 
-                value={value} 
-                placeholder="Search todos..."
-                onChange={(e) => {
-                    setValue(e.target.value);
-                    debouncedSearch(e.target.value);
-                }} 
-            />
+            <h1>Todos List</h1>
+            {todos && todos.map((todo: Todo) => (
+                <div key={todo.id} style={{ padding: 30, border: '2px solid black', margin: '10px 0' }}>
+                    <h3>{todo.id}. {todo.title}</h3>
+                    <p>Status: {todo.completed ? '✅ Completed' : '⏳ Pending'}</p>
+                </div>
+            ))}
         </div>
     );
 }
